@@ -305,3 +305,14 @@ The opaque error is not a law of nature. It is an architectural choice. And it i
 - Nygard, M. (2007). *Release It!*. Pragmatic Bookshelf.
 - Taleb, N. N. (2012). *Antifragile: Things That Gain from Disorder*. Random House.
 - Young, G. (2010). *CQRS Documents*. cqrs.files.wordpress.com.
+
+
+## Proof of Concept: Staged Healing Pipeline
+
+A runnable, dependency-free Python PoC demonstrates a deliberately ordered healing pipeline, with positive and negative cases at every stage. It starts with deterministic field aliases, then safe type coercion, format normalization, trusted-context completion, and finally explicit human negotiation. Each stage validates the result and records a trace; unresolved or ambiguous data is escalated rather than guessed.
+
+- [PoC implementation](poc/healing_pipeline.py)
+- [Automated tests](tests/test_healing_pipeline.py)
+- [Pipeline design and scenarios](docs/POC-HEALING-PIPELINE.md)
+
+Run from the repository root: `python poc/healing_pipeline.py` and `python -m unittest discover -s tests -v`.
