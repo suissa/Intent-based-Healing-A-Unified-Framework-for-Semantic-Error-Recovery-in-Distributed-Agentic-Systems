@@ -44,6 +44,18 @@ class HealingPipelineTests(unittest.TestCase):
         self.assertEqual(result.status, "HEALED")
         self.assertEqual(result.payload["phone"], "+5511987654321")
 
+    def test_local_phone_without_trusted_context_remains_unresolved(self):
+        payload = {
+            "username": "duda",
+            "email": "duda@example.com",
+            "age": 24,
+            "phone": "11987654321",
+        }
+        result = HealingPipeline().run(payload)
+        self.assertEqual(result.status, "ESCALATED")
+        self.assertIn("invalid:phone", result.unresolved)
+        self.assertEqual(result.payload["phone"], "11987654321")
+
     def test_contextual_phone_does_not_duplicate_existing_calling_code(self):
         payload = {
             "username": "duda",
