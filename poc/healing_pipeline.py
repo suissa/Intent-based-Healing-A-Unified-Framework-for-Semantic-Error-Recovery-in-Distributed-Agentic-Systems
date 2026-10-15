@@ -162,7 +162,7 @@ def validate(payload: dict[str, Any]) -> list[str]:
         issues.append("missing_or_invalid:email")
     if not isinstance(payload.get("age"), int) or isinstance(payload.get("age"), bool) or not 0 <= payload["age"] <= 120:
         issues.append("invalid:age")
-    if payload.get("phone") is not None and not re.fullmatch(r"\+?\d{8,15}", str(payload["phone"])):
+    if payload.get("phone") is not None and not re.fullmatch(r"\+\d{8,15}", str(payload["phone"])):
         issues.append("invalid:phone")
     return issues
 
