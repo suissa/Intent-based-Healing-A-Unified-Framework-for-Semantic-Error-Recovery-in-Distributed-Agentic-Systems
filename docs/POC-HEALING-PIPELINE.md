@@ -19,7 +19,7 @@ The input represents a request to create a customer with `username`, `email`, an
 |---|---|---|---|
 | 1 — weakest | H1 field aliases | `userName → username` | `age: "32"` remains a string |
 | 2 | H1 safe type coercion | `age: "32" → 32` | `email: " USER@EXAMPLE.COM "` remains invalid |
-| 3 | H1 format normalization | Trims/lowercases email and strips phone formatting | A local phone number without country context remains ambiguous |
+| 3 | H1 format normalization | Trims/lowercases email and strips phone formatting | A local phone number without country context remains invalid |
 | 4 | H2 contextual phone completion | Adds a country calling code supplied by trusted context | Missing email cannot be inferred from the payload |
 | 5 — strongest | H3 human negotiation | Uses an explicit human-provided answer for a missing/invalid email | Without an answer, the request remains escalated |
 
@@ -37,7 +37,7 @@ The ordering moves from deterministic, local transformations to transformations 
 ## Safety and semantics
 
 - No arbitrary domain correction (for example, `gmail.con → gmail.com`): that guess could silently change user intent.
-- No invented personal data. Contextual healing only uses explicitly supplied trusted context.
+- No invented personal data. Contextual healing only uses explicitly supplied trusted context. Phone validation requires normalized international format (`+` followed by 8–15 digits), so a local number cannot bypass contextual completion.
 - No retry loop; each stage runs once, so the pipeline is bounded and deterministic.
 - The original payload, transformed payload, stage outcomes, and validation diagnostics are returned for inspection.
 - This is a proof of concept, not a production-ready security boundary. Real systems should add schema/domain-specific validation, authorization checks, audit retention policy, redaction of personal data, and explicit rules for which fields may be healed.
