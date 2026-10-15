@@ -44,6 +44,28 @@ class HealingPipelineTests(unittest.TestCase):
         self.assertEqual(result.status, "HEALED")
         self.assertEqual(result.payload["phone"], "+5511987654321")
 
+    def test_contextual_phone_does_not_duplicate_existing_calling_code(self):
+        payload = {
+            "username": "duda",
+            "email": "duda@example.com",
+            "age": 24,
+            "phone": "5511987654321",
+        }
+        result = HealingPipeline().run(payload, {"country_calling_code": "55"})
+        self.assertEqual(result.status, "HEALED")
+        self.assertEqual(result.payload["phone"], "+5511987654321")
+
+    def test_human_healing_trace_records_original_missing_value(self):
+        stage = HumanNegotiationHealing()
+        healed, _, changes = stage.apply(
+            {"username": "eva", "age": 21},
+            {"human_answers": {"email": "eva@example.com"}},
+        )
+        self.assertEqual(healed["email"], "eva@example.com")
+        self.assertIsNone(changes["email"]["from"])
+        self.assertEqual(changes["email"]["to"], "eva@example.com")
+        self.assertEqual(changes["email"]["source"], "human")
+
     def test_human_negotiation_resolves_missing_email_only_with_answer(self):
         payload = {"username": "eva", "age": 21}
         no_answer = HealingPipeline().run(payload)
