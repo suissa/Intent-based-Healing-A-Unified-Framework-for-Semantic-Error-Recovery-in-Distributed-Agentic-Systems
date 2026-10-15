@@ -110,8 +110,16 @@ class ContextualPhoneHealing(HealingStage):
             digits = re.sub(r"\D", "", phone)
             code = re.sub(r"\D", "", str(country_code))
             if digits and code:
-                result["phone"] = f"+{code}{digits}"
-                changes["phone"] = {"from": phone, "to": result["phone"], "context": "country_calling_code"}
+                # Avoid duplicating a calling code already present without a '+'.
+                candidate = f"+{digits}" if digits.startswith(code) else f"+{code}{digits}"
+                # Only accept a candidate that satisfies the same phone contract as validation.
+                if re.fullmatch(r"\+\d{8,15}", candidate):
+                    result["phone"] = candidate
+                    changes["phone"] = {
+                        "from": phone,
+                        "to": candidate,
+                        "context": "country_calling_code",
+                    }
         return result, [], changes
 
 
@@ -128,8 +136,9 @@ class HumanNegotiationHealing(HealingStage):
             if not result.get(key):
                 answer = answers.get(key)
                 if isinstance(answer, str) and answer.strip():
+                    previous = result.get(key)
                     result[key] = answer.strip()
-                    changes[key] = {"from": result.get(key), "to": answer.strip(), "source": "human"}
+                    changes[key] = {"from": previous, "to": answer.strip(), "source": "human"}
                 else:
                     unresolved.append(f"missing:{key}")
         # An invalid email is ambiguous; ask a human rather than auto-correcting its domain.
